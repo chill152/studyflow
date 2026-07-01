@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Điểm số – StudyFlow</title>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+</head>
+<body>
+<div class="app-shell">
+  <div id="app-layout"></div>
+  <main class="main-content">
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <h1>🎯 Điểm số</h1>
+          <p>Theo dõi điểm số và GPA của bạn</p>
+        </div>
+        <button class="btn btn-primary" id="addGradeBtn">➕ Thêm điểm</button>
+      </div>
+
+      <!-- GPA Summary -->
+      <div class="grid grid-3" style="margin-bottom:24px">
+        <div class="card stat-card">
+          <div class="stat-icon" style="background:#eef2ff;color:#4f46e5;font-size:1.4rem">🏆</div>
+          <div><div class="num" id="gpaValue">0.00</div><div class="label">GPA (thang 4.0)</div></div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-icon" style="background:#dcfce7;color:#16a34a;font-size:1.4rem">📚</div>
+          <div><div class="num" id="totalSubjectsGraded">0</div><div class="label">Môn đã có điểm</div></div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-icon" style="background:#fef3c7;color:#f59e0b;font-size:1.4rem">⭐</div>
+          <div><div class="num" id="gradeClassification">—</div><div class="label">Xếp loại học lực</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Môn học</th>
+                <th>Tín chỉ</th>
+                <th>Điểm 10</th>
+                <th>Điểm 4</th>
+                <th>Xếp loại</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="gradesBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="gradeModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="gradeModalTitle">Thêm điểm</h3>
+      <button class="modal-close" onclick="closeGradeModal()">✕</button>
+    </div>
+    <form id="gradeForm">
+      <input type="hidden" id="gradeId">
+      <div class="form-group">
+        <label>Môn học *</label>
+        <select id="gradeSubject" class="filter-select" style="width:100%"></select>
+      </div>
+      <div class="form-group">
+        <label>Điểm (thang 10) *</label>
+        <input type="number" id="gradeScore" min="0" max="10" step="0.1" placeholder="VD: 8.5" required
+          style="width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 14px;background:var(--bg-soft);color:var(--text);outline:none">
+      </div>
+      <div class="form-hint" style="margin-bottom:16px">
+        Hệ thống sẽ tự tính điểm 4.0 và xếp loại theo thang điểm chuẩn.
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="closeGradeModal()">Hủy</button>
+        <button type="submit" class="btn btn-primary" style="width:auto">💾 Lưu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="./assets/js/auth.js"></script>
+<script src="./assets/js/script.js"></script>
+<script src="./assets/js/subjects.js"></script>
+<script src="./assets/js/grades.js"></script>
+<script>
+  initAppPage("grades");
+
+  // Xếp loại học lực
+  function updateClassification() {
+    const gpa = parseFloat(document.getElementById("gpaValue").textContent);
+    let cls = "—";
+    if (gpa >= 3.6) cls = "Xuất sắc";
+    else if (gpa >= 3.2) cls = "Giỏi";
+    else if (gpa >= 2.5) cls = "Khá";
+    else if (gpa >= 2.0) cls = "Trung bình";
+    else if (gpa > 0) cls = "Yếu";
+    document.getElementById("gradeClassification").textContent = cls;
+  }
+
+  const origRender = renderGrades;
+  window.renderGrades = function() { origRender(); updateClassification(); };
+  renderGrades();
+</script>
+</body>
+</html>

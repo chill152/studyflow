@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pomodoro – StudyFlow</title>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+</head>
+<body>
+<div class="app-shell">
+  <div id="app-layout"></div>
+  <main class="main-content">
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <h1>⏱️ Pomodoro Timer</h1>
+          <p>Tăng hiệu suất học tập với kỹ thuật Pomodoro</p>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="align-items:start">
+        <!-- Timer -->
+        <div class="card" style="text-align:center">
+          <div class="timer-modes">
+            <button class="timer-mode-btn active" data-mode="pomodoro">🍅 Tập trung (25p)</button>
+            <button class="timer-mode-btn" data-mode="short">☕ Nghỉ ngắn (5p)</button>
+            <button class="timer-mode-btn" data-mode="long">🛌 Nghỉ dài (15p)</button>
+          </div>
+
+          <div class="timer-wrap">
+            <div class="timer-ring">
+              <svg viewBox="0 0 280 280">
+                <circle class="ring-bg" cx="140" cy="140" r="130" />
+                <circle class="ring-progress" id="ringProgress" cx="140" cy="140" r="130"
+                  stroke-dasharray="816.81" stroke-dashoffset="0" />
+              </svg>
+              <div class="timer-display">
+                <div class="time" id="timerTime">25:00</div>
+                <div class="mode" id="timerModeLabel">TẬP TRUNG</div>
+              </div>
+            </div>
+
+            <div class="timer-controls">
+              <button class="btn btn-primary" id="startBtn">▶️ Bắt đầu</button>
+              <button class="btn btn-outline" id="resetBtn">🔄 Đặt lại</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats + Tips -->
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div class="card">
+            <div class="section-title" style="margin-top:0">📊 Thống kê hôm nay</div>
+            <div class="timer-stats">
+              <div>
+                <div class="ts-num" id="statSessions">0</div>
+                <div class="ts-label">Phiên hoàn thành</div>
+              </div>
+              <div>
+                <div class="ts-num" id="statMinutes">0</div>
+                <div class="ts-label">Phút tập trung</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-title" style="margin-top:0">💡 Kỹ thuật Pomodoro</div>
+            <div style="font-size:.86rem;color:var(--text-soft);line-height:1.7">
+              <p>1️⃣ Chọn nhiệm vụ cần làm</p>
+              <p>2️⃣ Đặt bộ đếm <b>25 phút</b></p>
+              <p>3️⃣ Làm việc cho đến khi hết giờ</p>
+              <p>4️⃣ Nghỉ <b>5 phút</b></p>
+              <p>5️⃣ Cứ 4 pomodoro nghỉ <b>15 phút</b></p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-title" style="margin-top:0">🎯 Nhiệm vụ đang làm</div>
+            <div id="timerTaskList" style="font-size:.86rem"></div>
+            <a href="./tasks.html" style="font-size:.82rem;color:var(--primary)">Quản lý nhiệm vụ →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="./assets/js/auth.js"></script>
+<script src="./assets/js/script.js"></script>
+<script src="./assets/js/timer.js"></script>
+<script>
+  initAppPage("timer");
+  // Show pending tasks
+  const tasks = getUserData("tasks", []).filter(t => !t.done).slice(0, 5);
+  document.getElementById("timerTaskList").innerHTML = tasks.length
+    ? tasks.map(t => `<div style="padding:8px 0;border-bottom:1px solid var(--border)">• ${escapeHtml(t.title)}</div>`).join("")
+    : `<p style="color:var(--text-soft)">Không có nhiệm vụ đang chờ 🎉</p>`;
+</script>
+</body>
+</html>

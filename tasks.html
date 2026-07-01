@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nhiệm vụ – StudyFlow</title>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+</head>
+<body>
+<div class="app-shell">
+  <div id="app-layout"></div>
+  <main class="main-content">
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <h1>✅ Nhiệm vụ</h1>
+          <p>Theo dõi và quản lý tất cả nhiệm vụ học tập</p>
+        </div>
+        <button class="btn btn-primary" id="addTaskBtn">➕ Thêm nhiệm vụ</button>
+      </div>
+
+      <!-- Toolbar lọc -->
+      <div class="card" style="margin-bottom:18px">
+        <div class="toolbar" style="flex-wrap:wrap;gap:10px">
+          <input type="text" id="taskSearch" class="form-group input" placeholder="🔍 Tìm nhiệm vụ..."
+            style="border:1px solid var(--border);border-radius:10px;padding:9px 14px;background:var(--bg-soft);color:var(--text);flex:1;min-width:160px">
+          <select id="filterStatus" class="filter-select">
+            <option value="all">Tất cả trạng thái</option>
+            <option value="pending">Chưa xong</option>
+            <option value="done">Đã hoàn thành</option>
+          </select>
+          <select id="filterPriority" class="filter-select">
+            <option value="all">Tất cả ưu tiên</option>
+            <option value="high">Ưu tiên cao</option>
+            <option value="medium">Trung bình</option>
+            <option value="low">Thấp</option>
+          </select>
+          <select id="filterSubject" class="filter-select"></select>
+        </div>
+      </div>
+
+      <div id="taskList" class="task-list"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal thêm/sửa nhiệm vụ -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="taskModalTitle">Thêm nhiệm vụ</h3>
+      <button class="modal-close" onclick="closeTaskModal()">✕</button>
+    </div>
+    <form id="taskForm">
+      <input type="hidden" id="taskId">
+      <div class="form-group">
+        <label>Tiêu đề *</label>
+        <input type="text" id="taskTitle" placeholder="VD: Ôn tập chương 3" required>
+      </div>
+      <div class="form-group">
+        <label>Mô tả</label>
+        <textarea id="taskDesc" placeholder="Chi tiết nhiệm vụ..." rows="3"
+          style="width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 14px;background:var(--bg-soft);color:var(--text);resize:vertical;outline:none"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Môn học</label>
+        <select id="taskSubject" class="filter-select" style="width:100%"></select>
+      </div>
+      <div class="form-group">
+        <label>Ưu tiên</label>
+        <select id="taskPriority" class="filter-select" style="width:100%">
+          <option value="high">🔴 Cao</option>
+          <option value="medium" selected>🟡 Trung bình</option>
+          <option value="low">🔵 Thấp</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Deadline</label>
+        <input type="datetime-local" id="taskDeadline"
+          style="width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 14px;background:var(--bg-soft);color:var(--text);outline:none">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="closeTaskModal()">Hủy</button>
+        <button type="submit" class="btn btn-primary" style="width:auto">💾 Lưu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="./assets/js/auth.js"></script>
+<script src="./assets/js/script.js"></script>
+<script src="./assets/js/subjects.js"></script>
+<script src="./assets/js/tasks.js"></script>
+<script>initAppPage("tasks");</script>
+</body>
+</html>

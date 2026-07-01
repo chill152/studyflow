@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ghi chú – StudyFlow</title>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+</head>
+<body>
+<div class="app-shell">
+  <div id="app-layout"></div>
+  <main class="main-content">
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <h1>📝 Ghi chú</h1>
+          <p>Ghi lại ý tưởng và kiến thức quan trọng</p>
+        </div>
+        <button class="btn btn-primary" id="newNoteBtn">➕ Ghi chú mới</button>
+      </div>
+
+      <div class="notes-layout">
+        <!-- Danh sách ghi chú -->
+        <div>
+          <div id="notesList"></div>
+        </div>
+
+        <!-- Editor -->
+        <div class="card" style="min-height:500px">
+          <div id="noteEditorEmpty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:400px;color:var(--text-soft)">
+            <div style="font-size:3rem;margin-bottom:12px">📝</div>
+            <h4 style="color:var(--text);margin-bottom:6px">Chọn ghi chú để xem</h4>
+            <p style="font-size:.85rem">hoặc tạo ghi chú mới</p>
+          </div>
+
+          <div id="noteEditorForm" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span id="noteSaveStatus" style="font-size:.75rem;color:var(--text-soft)"></span>
+              <button class="btn btn-danger btn-sm" id="deleteNoteBtn">🗑️ Xóa ghi chú</button>
+            </div>
+            <div class="note-editor">
+              <input type="text" id="noteTitleInput" placeholder="Tiêu đề ghi chú..." />
+              <textarea id="noteContentInput" placeholder="Nhập nội dung ghi chú tại đây...&#10;&#10;Ghi chú tự động lưu khi bạn gõ. ✓"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="./assets/js/auth.js"></script>
+<script src="./assets/js/script.js"></script>
+<script src="./assets/js/notes.js"></script>
+<script>initAppPage("notes");</script>
+</body>
+</html>

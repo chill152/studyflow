@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lịch học – StudyFlow</title>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+</head>
+<body>
+<div class="app-shell">
+  <div id="app-layout"></div>
+  <main class="main-content">
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <h1>📅 Lịch học</h1>
+          <p>Xem và quản lý lịch học của bạn</p>
+        </div>
+        <button class="btn btn-primary" id="addEventBtn">➕ Thêm sự kiện</button>
+      </div>
+
+      <!-- Month nav -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <button class="btn btn-outline btn-sm" id="prevMonth">‹ Trước</button>
+          <h3 id="calMonthTitle" style="font-size:1.1rem;font-weight:700"></h3>
+          <button class="btn btn-outline btn-sm" id="nextMonth">Sau ›</button>
+        </div>
+        <div class="calendar-grid" id="calGrid">
+          <div class="cal-dow">CN</div><div class="cal-dow">T2</div><div class="cal-dow">T3</div>
+          <div class="cal-dow">T4</div><div class="cal-dow">T5</div><div class="cal-dow">T6</div>
+          <div class="cal-dow">T7</div>
+        </div>
+      </div>
+
+      <!-- Upcoming events list -->
+      <div class="section-title">📋 Sự kiện sắp tới</div>
+      <div class="card">
+        <div id="upcomingEvents"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal thêm sự kiện -->
+<div class="modal-overlay" id="eventModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="eventModalTitle">Thêm sự kiện</h3>
+      <button class="modal-close" onclick="closeEventModal()">✕</button>
+    </div>
+    <form id="eventForm">
+      <input type="hidden" id="eventId">
+      <div class="form-group">
+        <label>Tiêu đề *</label>
+        <input type="text" id="eventTitle" placeholder="VD: Thi giữa kỳ Giải tích" required>
+      </div>
+      <div class="form-group">
+        <label>Ngày *</label>
+        <input type="date" id="eventDate" required style="width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 14px;background:var(--bg-soft);color:var(--text);outline:none">
+      </div>
+      <div class="form-group">
+        <label>Thời gian</label>
+        <input type="time" id="eventTime" style="width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 14px;background:var(--bg-soft);color:var(--text);outline:none">
+      </div>
+      <div class="form-group">
+        <label>Ghi chú</label>
+        <input type="text" id="eventNote" placeholder="Phòng thi, địa điểm...">
+      </div>
+      <div class="form-group">
+        <label>Màu</label>
+        <select id="eventColor" class="filter-select" style="width:100%">
+          <option value="#4f46e5">🔵 Tím (mặc định)</option>
+          <option value="#ef4444">🔴 Đỏ (thi cử)</option>
+          <option value="#16a34a">🟢 Xanh (học nhóm)</option>
+          <option value="#f59e0b">🟡 Vàng (deadline)</option>
+          <option value="#0ea5e9">🩵 Xanh lam (thuyết trình)</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="closeEventModal()">Hủy</button>
+        <button type="submit" class="btn btn-primary" style="width:auto">💾 Lưu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="./assets/js/auth.js"></script>
+<script src="./assets/js/script.js"></script>
+<script>
+  initAppPage("calendar");
+
+  let currentYear = new Date().getFullYear();
+  let currentMonth = new Date().getMonth();
+
+  function getEvents() { return getUserData("events", []); }
+  function saveEvents(e) { setUserData("events", e); }
+
+  function renderCalendar() {
+    const grid = document.getElementById("calGrid");
+    const title = document.getElementById("calMonthTitle");
+    const events = getEvents();
+    const tasks = getUserData("tasks", []);
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    title.textContent = new Date(currentYear, currentMonth).toLocaleDateString("vi-VN", {month:"long",year:"numeric"});
+
+    // Remove old cells (keep 7 dow headers)
+    while (grid.children.length > 7) grid.removeChild(grid.lastChild);
+
+    const first = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const prevDays = new Date(currentYear, currentMonth, 0).getDate();
+
+    // prev month filler
+    for (let i = first - 1; i >= 0; i--) {
+      const cell = document.createElement("div");
+      cell.className = "cal-cell other-month";
+      cell.innerHTML = `<div class="cd-num">${prevDays - i}</div>`;
+      grid.appendChild(cell);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      const cellDate = new Date(currentYear, currentMonth, d);
+      const isToday = cellDate.getTime() === today.getTime();
+
+      const dayEvents = events.filter(e => e.date === dateStr);
+      const dayTaskDL = tasks.filter(t => t.deadline && t.deadline.startsWith(dateStr) && !t.done);
+
+      const cell = document.createElement("div");
+      cell.className = "cal-cell" + (isToday ? " today" : "");
+      cell.innerHTML = `<div class="cd-num">${d}</div>
+        ${dayEvents.map(e => `<div class="cal-event" style="background:${e.color}22;color:${e.color}" onclick="editEvent('${e.id}')" title="${escapeHtml(e.title)}">${escapeHtml(e.title)}</div>`).join("")}
+        ${dayTaskDL.map(t => `<div class="cal-event" style="background:#ef444422;color:#ef4444" title="Deadline: ${escapeHtml(t.title)}">⚠️ ${escapeHtml(t.title)}</div>`).join("")}
+      `;
+      cell.addEventListener("click", (ev) => {
+        if (ev.target.classList.contains("cal-event")) return;
+        document.getElementById("eventDate").value = dateStr;
+        openEventModal();
+      });
+      grid.appendChild(cell);
+    }
+
+    // next month filler
+    const total = first + daysInMonth;
+    for (let i = 1; i <= (7 - (total % 7)) % 7; i++) {
+      const cell = document.createElement("div");
+      cell.className = "cal-cell other-month";
+      cell.innerHTML = `<div class="cd-num">${i}</div>`;
+      grid.appendChild(cell);
+    }
+
+    renderUpcoming();
+  }
+
+  function renderUpcoming() {
+    const events = getEvents().filter(e => new Date(e.date) >= new Date(new Date().toDateString()))
+      .sort((a,b) => new Date(a.date+' '+(a.time||'00:00')) - new Date(b.date+' '+(b.time||'00:00')))
+      .slice(0, 10);
+
+    document.getElementById("upcomingEvents").innerHTML = events.length
+      ? events.map(e => `
+        <div style="display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">
+          <div style="width:4px;min-height:40px;border-radius:4px;background:${e.color};flex-shrink:0"></div>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:.9rem">${escapeHtml(e.title)}</div>
+            <div style="font-size:.78rem;color:var(--text-soft)">${formatDate(e.date)}${e.time ? " · "+e.time : ""}${e.note ? " · "+escapeHtml(e.note) : ""}</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="icon-action" onclick="editEvent('${e.id}')">✏️</button>
+            <button class="icon-action" onclick="deleteEvent('${e.id}')">🗑️</button>
+          </div>
+        </div>`).join("")
+      : `<div class="empty-state"><div class="e-icon">📅</div><h4>Không có sự kiện sắp tới</h4></div>`;
+  }
+
+  function openEventModal(event = null) {
+    document.getElementById("eventModalTitle").textContent = event ? "Sửa sự kiện" : "Thêm sự kiện";
+    document.getElementById("eventId").value = event?.id || "";
+    if (!event) {
+      document.getElementById("eventTitle").value = "";
+      document.getElementById("eventTime").value = "";
+      document.getElementById("eventNote").value = "";
+      document.getElementById("eventColor").value = "#4f46e5";
+    } else {
+      document.getElementById("eventTitle").value = event.title || "";
+      document.getElementById("eventDate").value = event.date || "";
+      document.getElementById("eventTime").value = event.time || "";
+      document.getElementById("eventNote").value = event.note || "";
+      document.getElementById("eventColor").value = event.color || "#4f46e5";
+    }
+    document.getElementById("eventModal").classList.add("show");
+  }
+  function closeEventModal() { document.getElementById("eventModal").classList.remove("show"); }
+
+  function editEvent(id) {
+    const event = getEvents().find(e => e.id === id);
+    if (event) openEventModal(event);
+  }
+  function deleteEvent(id) {
+    if (!confirm("Xóa sự kiện này?")) return;
+    saveEvents(getEvents().filter(e => e.id !== id));
+    renderCalendar();
+    showToast("Đã xóa sự kiện", "success");
+  }
+
+  document.getElementById("eventForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const id = document.getElementById("eventId").value;
+    const data = {
+      title: document.getElementById("eventTitle").value.trim(),
+      date: document.getElementById("eventDate").value,
+      time: document.getElementById("eventTime").value,
+      note: document.getElementById("eventNote").value.trim(),
+      color: document.getElementById("eventColor").value,
+    };
+    if (!data.title || !data.date) return;
+    let events = getEvents();
+    if (id) events = events.map(ev => ev.id === id ? {...ev,...data} : ev);
+    else events.push({id: uid("ev"), ...data, createdAt: new Date().toISOString()});
+    saveEvents(events);
+    closeEventModal();
+    renderCalendar();
+    showToast("Đã lưu sự kiện", "success");
+  });
+
+  document.getElementById("prevMonth").addEventListener("click", () => {
+    currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; } renderCalendar();
+  });
+  document.getElementById("nextMonth").addEventListener("click", () => {
+    currentMonth++; if (currentMonth > 11) { currentMonth = 0; currentYear++; } renderCalendar();
+  });
+  document.getElementById("addEventBtn").addEventListener("click", () => {
+    document.getElementById("eventDate").value = new Date().toISOString().slice(0,10);
+    openEventModal();
+  });
+
+  renderCalendar();
+</script>
+</body>
+</html>

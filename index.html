@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – StudyFlow</title>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <div id="app-layout"></div>
+    <main class="main-content">
+      <div class="page" id="dashboardPage">
+        <div class="page-header">
+          <div>
+            <h1 id="greetMsg">👋 Xin chào!</h1>
+            <p id="greetDate"></p>
+          </div>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="grid grid-4" id="statsRow"></div>
+
+        <!-- Recent tasks + Upcoming deadlines -->
+        <div class="grid grid-2" style="margin-top:24px">
+          <div class="card">
+            <div class="section-title">✅ Nhiệm vụ gần đây</div>
+            <div id="recentTasks"></div>
+            <a href="./tasks.html" style="display:block;text-align:center;margin-top:12px;font-size:.83rem;color:var(--primary)">Xem tất cả →</a>
+          </div>
+          <div class="card">
+            <div class="section-title">⚠️ Sắp đến hạn</div>
+            <div id="upcomingDeadlines"></div>
+            <a href="./tasks.html" style="display:block;text-align:center;margin-top:12px;font-size:.83rem;color:var(--primary)">Xem tất cả →</a>
+          </div>
+        </div>
+
+        <!-- Subjects quick view -->
+        <div class="section-title">📚 Môn học của bạn</div>
+        <div class="grid grid-4" id="dashSubjects"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="./assets/js/auth.js"></script>
+  <script src="./assets/js/script.js"></script>
+  <script>
+    initAppPage("index");
+
+    const user = getCurrentUser();
+    const hour = new Date().getHours();
+    const greet = hour < 12 ? "Chào buổi sáng" : hour < 18 ? "Chào buổi chiều" : "Chào buổi tối";
+    document.getElementById("greetMsg").textContent = `${greet}, ${user?.fullname || user?.username}! 👋`;
+    document.getElementById("greetDate").textContent = new Date().toLocaleDateString("vi-VN", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+
+    // Stats
+    const tasks = getUserData("tasks", []);
+    const subjects = getUserData("subjects", []);
+    const notes = getUserData("notes", []);
+    const pStats = getUserData("pomodoro_stats", { sessions:0 });
+    const doneTasks = tasks.filter(t => t.done).length;
+
+    const statData = [
+      { icon:"📚", label:"Môn học", num:subjects.length, bg:"#eef2ff", iconBg:"#4f46e5" },
+      { icon:"✅", label:"Nhiệm vụ hoàn thành", num:`${doneTasks}/${tasks.length}`, bg:"#dcfce7", iconBg:"#16a34a" },
+      { icon:"⏱️", label:"Phiên Pomodoro hôm nay", num:pStats.sessions, bg:"#fef3c7", iconBg:"#f59e0b" },
+      { icon:"📝", label:"Ghi chú", num:notes.length, bg:"#e0f2fe", iconBg:"#0ea5e9" },
+    ];
+
+    document.getElementById("statsRow").innerHTML = statData.map(s => `
+      <div class="card stat-card">
+        <div class="stat-icon" style="background:${s.bg};color:${s.iconBg};font-size:1.4rem">${s.icon}</div>
+        <div>
+          <div class="num">${s.num}</div>
+          <div class="label">${s.label}</div>
+        </div>
+      </div>`).join("");
+
+    // Recent tasks
+    const recentTasks = [...tasks].sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt)).slice(0,5);
+    document.getElementById("recentTasks").innerHTML = recentTasks.length
+      ? recentTasks.map(t => `
+        <div class="task-item" style="padding:10px 0;border:none;border-bottom:1px solid var(--border)">
+          <input type="checkbox" ${t.done?"checked":""} disabled>
+          <div class="task-main"><div class="task-title" style="font-size:.88rem">${escapeHtml(t.title)}</div></div>
+          <span class="tag ${t.done?"tag-success":"tag-warning"}">${t.done?"Xong":"Đang làm"}</span>
+        </div>`).join("")
+      : `<div class="empty-state" style="padding:24px 0"><div class="e-icon">✅</div><p>Chưa có nhiệm vụ nào</p></div>`;
+
+    // Upcoming deadlines
+    const now = new Date();
+    const upcoming = tasks.filter(t => !t.done && t.deadline && new Date(t.deadline) > now)
+      .sort((a,b) => new Date(a.deadline)-new Date(b.deadline)).slice(0,5);
+    document.getElementById("upcomingDeadlines").innerHTML = upcoming.length
+      ? upcoming.map(t => `
+        <div style="padding:10px 0;border-bottom:1px solid var(--border);font-size:.85rem">
+          <div style="font-weight:600">${escapeHtml(t.title)}</div>
+          <div style="color:var(--text-soft);font-size:.75rem;margin-top:2px">📅 ${formatDateTime(t.deadline)}</div>
+        </div>`).join("")
+      : `<div class="empty-state" style="padding:24px 0"><div class="e-icon">🎉</div><p>Không có deadline sắp tới</p></div>`;
+
+    // Dashboard subjects
+    const dashSubs = subjects.slice(0,4);
+    document.getElementById("dashSubjects").innerHTML = dashSubs.length
+      ? dashSubs.map(s => {
+          const subTasks = tasks.filter(t => t.subjectId === s.id);
+          const pct = subTasks.length ? Math.round(subTasks.filter(t=>t.done).length/subTasks.length*100) : 0;
+          return `<a href="./subjects.html" class="card subject-card" style="border-top-color:${s.color};display:block">
+            <div class="s-name">${escapeHtml(s.name)}</div>
+            <div class="s-meta">${s.credits||0} tín chỉ • ${subTasks.length} nhiệm vụ</div>
+            <div class="progress-bar" style="margin-top:10px"><div class="progress-fill" style="width:${pct}%;background:${s.color}"></div></div>
+            <div class="s-meta" style="margin-top:6px">${pct}% hoàn thành</div>
+          </a>`;
+        }).join("")
+      : `<div class="empty-state" style="grid-column:1/-1"><div class="e-icon">📚</div><p>Chưa có môn học nào. <a href="./subjects.html" style="color:var(--primary)">Thêm ngay →</a></p></div>`;
+  </script>
+</body>
+</html>

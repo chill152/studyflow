@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Môn học – StudyFlow</title>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+</head>
+<body>
+<div class="app-shell">
+  <div id="app-layout"></div>
+  <main class="main-content">
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <h1>📚 Môn học</h1>
+          <p>Quản lý các môn học và theo dõi tiến độ</p>
+        </div>
+        <button class="btn btn-primary" id="addSubjectBtn">➕ Thêm môn học</button>
+      </div>
+      <div class="grid grid-3" id="subjectsGrid"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal thêm/sửa môn học -->
+<div class="modal-overlay" id="subjectModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="subjectModalTitle">Thêm môn học</h3>
+      <button class="modal-close" onclick="closeSubjectModal()">✕</button>
+    </div>
+    <form id="subjectForm">
+      <input type="hidden" id="subjectId">
+      <div class="form-group">
+        <label>Tên môn học *</label>
+        <input type="text" id="subjectName" placeholder="VD: Giải tích 1" required>
+      </div>
+      <div class="form-group">
+        <label>Giảng viên</label>
+        <input type="text" id="subjectTeacher" placeholder="VD: TS. Nguyễn Văn A">
+      </div>
+      <div class="form-group">
+        <label>Số tín chỉ</label>
+        <input type="number" id="subjectCredits" min="1" max="10" value="3">
+      </div>
+      <div class="form-group">
+        <label>Màu sắc</label>
+        <input type="color" id="subjectColor" value="#4f46e5" style="width:60px;height:40px;padding:4px;border-radius:8px;border:1px solid var(--border)">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="closeSubjectModal()">Hủy</button>
+        <button type="submit" class="btn btn-primary" style="width:auto">💾 Lưu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="./assets/js/auth.js"></script>
+<script src="./assets/js/script.js"></script>
+<script src="./assets/js/subjects.js"></script>
+<script>initAppPage("subjects");</script>
+</body>
+</html>
